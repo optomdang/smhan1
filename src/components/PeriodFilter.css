@@ -90,12 +90,44 @@
   font-weight: 500;
 }
 
+.period-filter-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.period-filter-inline .period-mode-tab {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+}
+
+.period-filter-inline .period-controls {
+  padding: 0.25rem;
+}
+
+.period-filter-inline .period-nav {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1rem;
+}
+
+.period-filter-inline .period-input {
+  min-width: 7.5rem;
+  font-size: 0.8125rem;
+  padding: 0.2rem 0.35rem;
+}
+
 .period-filter-readonly {
   align-items: flex-end;
   padding: 0.45rem 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: #f8fafc;
+}
+
+.period-filter-readonly.period-filter-inline {
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .period-readonly-label {

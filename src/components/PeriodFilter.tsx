@@ -14,6 +14,7 @@ interface PeriodFilterProps {
   period: PeriodRange
   onChange: (period: PeriodRange) => void
   readOnly?: boolean
+  inline?: boolean
 }
 
 const MODES: { id: FilterMode; label: string }[] = [
@@ -22,7 +23,7 @@ const MODES: { id: FilterMode; label: string }[] = [
   { id: 'month', label: 'Tháng' },
 ]
 
-export function PeriodFilter({ period, onChange, readOnly = false }: PeriodFilterProps) {
+export function PeriodFilter({ period, onChange, readOnly = false, inline = false }: PeriodFilterProps) {
   const setMode = (mode: FilterMode) => {
     if (mode === period.mode) return
     const today = todayIso()
@@ -60,9 +61,17 @@ export function PeriodFilter({ period, onChange, readOnly = false }: PeriodFilte
     return `${year}-${String(month + 1).padStart(2, '0')}`
   })()
 
+  const filterClassName = [
+    'period-filter',
+    inline ? 'period-filter-inline' : '',
+    readOnly ? 'period-filter-readonly' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   if (readOnly) {
     return (
-      <div className="period-filter period-filter-readonly">
+      <div className={filterClassName}>
         <span className="period-readonly-label">Kỳ báo cáo</span>
         <span className="period-label">{period.label}</span>
       </div>
@@ -70,7 +79,7 @@ export function PeriodFilter({ period, onChange, readOnly = false }: PeriodFilte
   }
 
   return (
-    <div className="period-filter">
+    <div className={filterClassName}>
       <div className="period-mode-tabs" role="tablist" aria-label="Lọc theo thời gian">
         {MODES.map((mode) => (
           <button
@@ -126,7 +135,7 @@ export function PeriodFilter({ period, onChange, readOnly = false }: PeriodFilte
         </button>
       </div>
 
-      <span className="period-label">{period.label}</span>
+      {!inline && <span className="period-label">{period.label}</span>}
     </div>
   )
 }

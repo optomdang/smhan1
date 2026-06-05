@@ -49,7 +49,7 @@ export function DashboardPage() {
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
-        <div>
+        <div className="dashboard-title-block">
           <h1>Dashboard</h1>
           <p className="dashboard-subtitle">
             Tổng hợp báo cáo cơ hội và doanh số toàn đội
@@ -60,40 +60,37 @@ export function DashboardPage() {
             )}
           </p>
         </div>
-        <div className="dashboard-toolbar">
-          <div className="dashboard-auth-actions">
-            {!canEditDashboard ? (
+        <div className="dashboard-toolbar-row">
+          {!canEditDashboard ? (
+            <button
+              type="button"
+              className="btn-dashboard-edit"
+              onClick={() => setShowLoginModal(true)}
+            >
+              Đăng nhập chỉnh sửa
+            </button>
+          ) : (
+            <>
               <button
                 type="button"
-                className="btn-dashboard-edit"
-                onClick={() => setShowLoginModal(true)}
+                className="btn-dashboard-password"
+                onClick={() => setShowChangePasswordModal(true)}
               >
-                Đăng nhập chỉnh sửa
+                Đổi mật khẩu
               </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="btn-dashboard-password"
-                  onClick={() => setShowChangePasswordModal(true)}
-                >
-                  Đổi mật khẩu
-                </button>
-                <button type="button" className="btn-dashboard-logout" onClick={logout}>
-                  Đăng xuất
-                </button>
-              </>
-            )}
-          </div>
-          {canEditDashboard && (
-            <button type="button" className="btn-demo-data" onClick={handleReseed}>
-              Nạp dữ liệu mẫu
-            </button>
+              <button type="button" className="btn-dashboard-logout" onClick={logout}>
+                Đăng xuất
+              </button>
+              <button type="button" className="btn-demo-data" onClick={handleReseed}>
+                Nạp dữ liệu mẫu
+              </button>
+            </>
           )}
           <PeriodFilter
             period={period}
             onChange={setPeriod}
             readOnly={!canEditDashboard}
+            inline
           />
         </div>
       </header>
