@@ -1,0 +1,135 @@
+.source-chart-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  height: 100%;
+}
+
+.source-chart-header {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(180deg, #f8fbff, #fff);
+}
+
+.source-chart-header h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.source-chart-sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.source-chart-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.source-donut {
+  width: 9.5rem;
+  height: 9.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.source-donut-hole {
+  width: 5.75rem;
+  height: 5.75rem;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px #f1f5f9;
+}
+
+.source-donut-total {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.1;
+}
+
+.source-donut-label {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+
+.source-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.source-legend-item {
+  width: 100%;
+}
+
+.source-legend-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.source-legend-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.source-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.source-legend-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.source-legend-pct {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 0.2rem;
+}
+
+.source-bar-track {
+  height: 0.375rem;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.source-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+  min-width: 0;
+}
