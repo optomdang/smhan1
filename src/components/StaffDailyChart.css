@@ -8,9 +8,47 @@
 }
 
 .staff-daily-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
   padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--color-border);
   background: linear-gradient(180deg, #f8fbff, #fff);
+  flex-wrap: wrap;
+}
+
+.stats-view-tabs {
+  display: inline-flex;
+  padding: 0.2rem;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.stats-view-tabs-readonly {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.stats-view-tab {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.stats-view-tab.active {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .staff-daily-chart-header h3 {

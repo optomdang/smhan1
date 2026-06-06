@@ -72,6 +72,57 @@ function loadRowsForPeriod(staffId: string, period: PeriodRange) {
   return { opportunities, revenues }
 }
 
+function getMondayKey(date: string): string {
+  const { year, month, day } = parseIsoDate(date)
+  const weekday = new Date(year, month, day).getDay()
+  const mondayOffset = weekday === 0 ? -6 : 1 - weekday
+  const monday = new Date(year, month, day + mondayOffset)
+  return toIsoDate(monday.getFullYear(), monday.getMonth(), monday.getDate())
+}
+
+function formatWeekLabel(mondayIso: string, weekIndex: number): string {
+  const start = parseIsoDate(mondayIso)
+  const sunday = new Date(start.year, start.month, start.day + 6)
+  const endDay = sunday.getDate()
+  const endMonth = sunday.getMonth() + 1
+  return `T${weekIndex + 1} (${start.day}/${start.month + 1}–${endDay}/${endMonth})`
+}
+
+export function aggregateDailyStatsByWeek(daily: DailyStatPoint[]): DailyStatPoint[] {
+  const weeks = new Map<string, DailyStatPoint>()
+
+  for (const point of daily) {
+    const weekKey = getMondayKey(point.date)
+    const existing = weeks.get(weekKey)
+
+    if (!existing) {
+      weeks.set(weekKey, {
+        date: weekKey,
+        label: '',
+        opportunities: point.opportunities,
+        customerSources: point.customerSources,
+        revenueReceived: point.revenueReceived,
+        projectsToRecover: point.projectsToRecover,
+        amountToRecover: point.amountToRecover,
+      })
+      continue
+    }
+
+    existing.opportunities += point.opportunities
+    existing.customerSources += point.customerSources
+    existing.revenueReceived += point.revenueReceived
+    existing.projectsToRecover += point.projectsToRecover
+    existing.amountToRecover += point.amountToRecover
+  }
+
+  return [...weeks.values()]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((point, index) => ({
+      ...point,
+      label: formatWeekLabel(point.date, index),
+    }))
+}
+
 export function getDailyStatsForStaff(staffId: string, period: PeriodRange): DailyStatPoint[] {
   const { opportunities, revenues } = loadRowsForPeriod(staffId, period)
   const dates = getDatesInPeriod(period)
@@ -90,6 +141,10 @@ export function getDailyStatsForStaff(staffId: string, period: PeriodRange): Dai
       amountToRecover: dayRevenues.reduce((sum, row) => sum + parseCurrency(row.receivable), 0),
     }
   })
+}
+
+export function getWeeklyStatsForStaff(staffId: string, period: PeriodRange): DailyStatPoint[] {
+  return aggregateDailyStatsByWeek(getDailyStatsForStaff(staffId, period))
 }
 
 export function getMetricValue(point: DailyStatPoint, key: MetricKey): number {

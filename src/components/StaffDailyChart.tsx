@@ -8,6 +8,7 @@ import {
   getDailyStatsForStaff,
   getMetricDefinition,
   getMetricValue,
+  getWeeklyStatsForStaff,
 } from '../utils/dailyStats'
 import type { PeriodRange } from '../utils/period'
 import './StaffDailyChart.css'
@@ -42,16 +43,25 @@ const CHART_HEIGHT = 280
 const PADDING = { top: 20, right: 56, bottom: 44, left: 48 }
 
 type ActiveSlot = ChartSlot & { metric: MetricKey }
+type StatsViewMode = 'day' | 'week'
+
+const VIEW_MODES: { id: StatsViewMode; label: string }[] = [
+  { id: 'day', label: 'Theo ngày' },
+  { id: 'week', label: 'Theo tuần' },
+]
 
 export function StaffDailyChart({ period, refreshKey = 0, editable = true }: StaffDailyChartProps) {
   const [staffId, setStaffId] = useState(STAFF_MEMBERS[0].id)
   const [slots, setSlots] = useState<ChartSlot[]>(DEFAULT_SLOTS)
+  const [viewMode, setViewMode] = useState<StatsViewMode>('day')
 
   const staff = STAFF_MEMBERS.find((item) => item.id === staffId) ?? STAFF_MEMBERS[0]
-  const dailyData = useMemo(
-    () => getDailyStatsForStaff(staffId, period),
-    [staffId, period, refreshKey],
-  )
+  const chartData = useMemo(() => {
+    if (viewMode === 'week') {
+      return getWeeklyStatsForStaff(staffId, period)
+    }
+    return getDailyStatsForStaff(staffId, period)
+  }, [staffId, period, refreshKey, viewMode])
 
   const activeSlots = useMemo(
     () => slots.filter((slot): slot is ActiveSlot => slot.metric !== null),
@@ -63,25 +73,25 @@ export function StaffDailyChart({ period, refreshKey = 0, editable = true }: Sta
 
   const chartModel = useMemo(() => {
     if (activeSlots.length === 0) {
-      return { countMax: 1, moneyMax: 1, series: [], xAt: () => 0, dailyData }
+      return { countMax: 1, moneyMax: 1, series: [], xAt: () => 0, chartData }
     }
 
     const countMax = Math.max(
       1,
       ...activeSlots
         .filter((slot) => getMetricDefinition(slot.metric).unit === 'count')
-        .flatMap((slot) => dailyData.map((point) => getMetricValue(point, slot.metric))),
+        .flatMap((slot) => chartData.map((point) => getMetricValue(point, slot.metric))),
     )
     const moneyMax = Math.max(
       1,
       ...activeSlots
         .filter((slot) => getMetricDefinition(slot.metric).unit === 'money')
-        .flatMap((slot) => dailyData.map((point) => getMetricValue(point, slot.metric))),
+        .flatMap((slot) => chartData.map((point) => getMetricValue(point, slot.metric))),
     )
 
-    const xStep = dailyData.length > 1 ? plotWidth / (dailyData.length - 1) : plotWidth
+    const xStep = chartData.length > 1 ? plotWidth / (chartData.length - 1) : plotWidth
     const xAt = (index: number) =>
-      PADDING.left + (dailyData.length > 1 ? index * xStep : plotWidth / 2)
+      PADDING.left + (chartData.length > 1 ? index * xStep : plotWidth / 2)
 
     const yCount = (value: number) => PADDING.top + plotHeight - (value / countMax) * plotHeight
     const yMoney = (value: number) => PADDING.top + plotHeight - (value / moneyMax) * plotHeight
@@ -91,22 +101,22 @@ export function StaffDailyChart({ period, refreshKey = 0, editable = true }: Sta
     const series = activeSlots.map((slot, seriesIndex) => {
       const definition = getMetricDefinition(slot.metric)
       const color = SLOT_COLORS[seriesIndex % SLOT_COLORS.length]
-      const points = dailyData.map((point, index) => ({
+      const points = chartData.map((point, index) => ({
         x: xAt(index),
         y: yFor(getMetricValue(point, slot.metric), definition.unit),
         value: getMetricValue(point, slot.metric),
         label: point.label,
       }))
 
-      const dayWidth = dailyData.length > 0 ? plotWidth / dailyData.length : plotWidth
+      const dayWidth = chartData.length > 0 ? plotWidth / chartData.length : plotWidth
       const barWidth = Math.min(32, (dayWidth * 0.78) / activeSlots.length)
       const barOffset = (seriesIndex - (activeSlots.length - 1) / 2) * (barWidth + 4)
 
       return { slot, definition, color, seriesIndex, points, barWidth, barOffset }
     })
 
-    return { countMax, moneyMax, series, xAt, dailyData }
-  }, [activeSlots, dailyData, plotHeight, plotWidth])
+    return { countMax, moneyMax, series, xAt, chartData }
+  }, [activeSlots, chartData, plotHeight, plotWidth])
 
   const selectMetric = (slotIndex: number, metricKey: MetricKey) => {
     setSlots((current) =>
@@ -133,8 +143,30 @@ export function StaffDailyChart({ period, refreshKey = 0, editable = true }: Sta
     <section className="staff-daily-chart-card">
       <div className="staff-daily-chart-header">
         <div>
-          <h3>Thống kê cá nhân theo ngày</h3>
-          <p>{staff.name} · {period.label}</p>
+          <h3>Thống kê cá nhân</h3>
+          <p>
+            {staff.name} · {period.label} ·{' '}
+            {viewMode === 'day' ? 'Theo ngày' : 'Theo tuần'}
+          </p>
+        </div>
+        <div
+          className={`stats-view-tabs${editable ? '' : ' stats-view-tabs-readonly'}`}
+          role="tablist"
+          aria-label="Kiểu thống kê"
+        >
+          {VIEW_MODES.map((mode) => (
+            <button
+              key={mode.id}
+              type="button"
+              role="tab"
+              aria-selected={viewMode === mode.id}
+              className={`stats-view-tab${viewMode === mode.id ? ' active' : ''}`}
+              onClick={() => setViewMode(mode.id)}
+              disabled={!editable}
+            >
+              {mode.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -226,7 +258,7 @@ export function StaffDailyChart({ period, refreshKey = 0, editable = true }: Sta
               viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
               className="combo-chart"
               role="img"
-              aria-label={`Biểu đồ thống kê theo ngày của ${staff.name}`}
+              aria-label={`Biểu đồ thống kê cá nhân ${viewMode === 'day' ? 'theo ngày' : 'theo tuần'} của ${staff.name}`}
             >
               {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
                 const y = PADDING.top + plotHeight * (1 - ratio)
@@ -317,7 +349,7 @@ export function StaffDailyChart({ period, refreshKey = 0, editable = true }: Sta
                 )
               })}
 
-              {chartModel.dailyData.map((point, index) => (
+              {chartModel.chartData.map((point, index) => (
                 <text
                   key={point.date}
                   x={chartModel.xAt(index)}
@@ -325,7 +357,9 @@ export function StaffDailyChart({ period, refreshKey = 0, editable = true }: Sta
                   className="chart-axis-label chart-axis-bottom"
                   textAnchor="middle"
                 >
-                  {point.label.split('/')[0]}
+                  {viewMode === 'week'
+                    ? point.label.split(' ')[0]
+                    : point.label.split('/')[0]}
                 </text>
               ))}
             </svg>
