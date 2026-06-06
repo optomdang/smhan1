@@ -15,6 +15,23 @@ export interface OpportunityRow {
   isExtra?: boolean
 }
 
+export interface RevenueEntryRow {
+  id: string
+  date: string
+  project: string
+  moneyReceived: string
+  isExtra?: boolean
+}
+
+export interface ReceivableEntryRow {
+  id: string
+  date: string
+  project: string
+  receivable: string
+  isExtra?: boolean
+}
+
+/** @deprecated Dùng RevenueEntryRow / ReceivableEntryRow */
 export interface RevenueRow {
   id: string
   date: string
@@ -26,5 +43,6 @@ export interface RevenueRow {
 
 export interface StaffMonthData {
   opportunities: OpportunityRow[]
-  revenues: RevenueRow[]
+  revenueRows: RevenueEntryRow[]
+  receivableRows: ReceivableEntryRow[]
 }

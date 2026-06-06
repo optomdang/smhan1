@@ -26,14 +26,20 @@ export function StaffPage() {
 
   const {
     opportunities,
-    revenues,
+    revenueRows,
+    receivableRows,
     isEditing,
     isDirty,
     saveMessage,
     updateOpportunities,
-    updateRevenues,
+    updateRevenueRows,
+    updateReceivableRows,
     addOpportunityRowAfter,
+    removeOpportunityRow,
     addRevenueRowAfter,
+    removeRevenueRow,
+    addReceivableRowAfter,
+    removeReceivableRow,
     startEdit,
     cancelEdit,
     save,
@@ -151,20 +157,23 @@ export function StaffPage() {
           editable={isEditing}
           onChange={(rows) => updateOpportunities(() => rows)}
           onAddRowAfter={addOpportunityRowAfter}
+          onRemoveRow={removeOpportunityRow}
         />
         <RevenueTable
-          rows={revenues}
+          rows={revenueRows}
           monthKey={monthKey}
           editable={isEditing}
-          onChange={(rows) => updateRevenues(() => rows)}
+          onChange={(rows) => updateRevenueRows(() => rows)}
           onAddRowAfter={addRevenueRowAfter}
+          onRemoveRow={removeRevenueRow}
         />
         <ReceivableTable
-          rows={revenues}
+          rows={receivableRows}
           monthKey={monthKey}
           editable={isEditing}
-          onChange={(rows) => updateRevenues(() => rows)}
-          onAddRowAfter={addRevenueRowAfter}
+          onChange={(rows) => updateReceivableRows(() => rows)}
+          onAddRowAfter={addReceivableRowAfter}
+          onRemoveRow={removeReceivableRow}
         />
       </div>
 

@@ -1,5 +1,11 @@
 import { STAFF_MEMBERS } from './staff'
-import type { OpportunityRow, RevenueRow, SourceOption, StaffMonthData } from '../types'
+import type {
+  OpportunityRow,
+  ReceivableEntryRow,
+  RevenueEntryRow,
+  SourceOption,
+  StaffMonthData,
+} from '../types'
 import { SOURCE_OPTIONS } from '../types'
 import { getDaysInMonth, getSeedMonthKey, parseMonthKey } from '../utils/date'
 import { formatCurrency } from '../utils/format'
@@ -70,7 +76,8 @@ function buildMonthData(monthKey: string, staffId: string): StaffMonthData {
   const days = getDaysInMonth(year, month)
 
   const opportunities: OpportunityRow[] = []
-  const revenues: RevenueRow[] = []
+  const revenueRows: RevenueEntryRow[] = []
+  const receivableRows: ReceivableEntryRow[] = []
 
   for (let i = 0; i < days.length; i++) {
     const day = i + 1
@@ -95,28 +102,40 @@ function buildMonthData(monthKey: string, staffId: string): StaffMonthData {
     }
 
     const money = generateMoney(staffIndex, day)
-    revenues.push({
+    const receivableAmount = generateReceivable(staffIndex, day, money)
+    revenueRows.push({
       id: createId(),
       date,
       project: generateProject(staffIndex, day),
       moneyReceived: formatCurrency(String(money)),
-      receivable: formatCurrency(String(generateReceivable(staffIndex, day, money))),
+    })
+    receivableRows.push({
+      id: createId(),
+      date,
+      project: generateProject(staffIndex, day),
+      receivable: formatCurrency(String(receivableAmount)),
     })
 
     if ((day + staffIndex) % 7 === 0) {
       const extraMoney = generateMoney(staffIndex, day, 7)
-      revenues.push({
+      revenueRows.push({
         id: createId(),
         date,
         project: generateProject(staffIndex, day, 8),
         moneyReceived: formatCurrency(String(extraMoney)),
+        isExtra: true,
+      })
+      receivableRows.push({
+        id: createId(),
+        date,
+        project: generateProject(staffIndex, day, 8),
         receivable: formatCurrency(String(generateReceivable(staffIndex, day, extraMoney, 9))),
         isExtra: true,
       })
     }
   }
 
-  return { opportunities, revenues }
+  return { opportunities, revenueRows, receivableRows }
 }
 
 function clearNonSeedMonthData(seedMonthKey: string): void {

@@ -1,4 +1,4 @@
-import type { OpportunityRow, RevenueRow } from '../types'
+import type { OpportunityRow, ReceivableEntryRow, RevenueEntryRow } from '../types'
 import { formatDisplayDate } from './date'
 import { parseCurrency } from './format'
 import type { PeriodRange } from './period'
@@ -61,15 +61,17 @@ function getDatesInPeriod(period: PeriodRange): string[] {
 function loadRowsForPeriod(staffId: string, period: PeriodRange) {
   const monthKeys = getMonthKeysInRange(period.start, period.end)
   const opportunities: OpportunityRow[] = []
-  const revenues: RevenueRow[] = []
+  const revenueRows: RevenueEntryRow[] = []
+  const receivableRows: ReceivableEntryRow[] = []
 
   for (const monthKey of monthKeys) {
     const data = loadStaffData(staffId, monthKey)
     opportunities.push(...data.opportunities.filter((row) => isDateInRange(row.date, period.start, period.end)))
-    revenues.push(...data.revenues.filter((row) => isDateInRange(row.date, period.start, period.end)))
+    revenueRows.push(...data.revenueRows.filter((row) => isDateInRange(row.date, period.start, period.end)))
+    receivableRows.push(...data.receivableRows.filter((row) => isDateInRange(row.date, period.start, period.end)))
   }
 
-  return { opportunities, revenues }
+  return { opportunities, revenueRows, receivableRows }
 }
 
 function getMondayKey(date: string): string {
@@ -124,21 +126,22 @@ export function aggregateDailyStatsByWeek(daily: DailyStatPoint[]): DailyStatPoi
 }
 
 export function getDailyStatsForStaff(staffId: string, period: PeriodRange): DailyStatPoint[] {
-  const { opportunities, revenues } = loadRowsForPeriod(staffId, period)
+  const { opportunities, revenueRows, receivableRows } = loadRowsForPeriod(staffId, period)
   const dates = getDatesInPeriod(period)
 
   return dates.map((date) => {
     const dayOpportunities = opportunities.filter((row) => row.date === date)
-    const dayRevenues = revenues.filter((row) => row.date === date)
+    const dayRevenueRows = revenueRows.filter((row) => row.date === date)
+    const dayReceivableRows = receivableRows.filter((row) => row.date === date)
 
     return {
       date,
       label: formatDisplayDate(date),
       opportunities: dayOpportunities.filter((row) => row.company.trim()).length,
       customerSources: dayOpportunities.filter((row) => row.company.trim() && row.source).length,
-      revenueReceived: dayRevenues.reduce((sum, row) => sum + parseCurrency(row.moneyReceived), 0),
-      projectsToRecover: dayRevenues.filter((row) => parseCurrency(row.receivable) > 0).length,
-      amountToRecover: dayRevenues.reduce((sum, row) => sum + parseCurrency(row.receivable), 0),
+      revenueReceived: dayRevenueRows.reduce((sum, row) => sum + parseCurrency(row.moneyReceived), 0),
+      projectsToRecover: dayReceivableRows.filter((row) => parseCurrency(row.receivable) > 0).length,
+      amountToRecover: dayReceivableRows.reduce((sum, row) => sum + parseCurrency(row.receivable), 0),
     }
   })
 }

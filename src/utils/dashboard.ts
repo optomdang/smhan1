@@ -1,5 +1,5 @@
 import { STAFF_MEMBERS } from '../data/staff'
-import type { OpportunityRow, RevenueRow, SourceOption } from '../types'
+import type { OpportunityRow, ReceivableEntryRow, RevenueEntryRow, SourceOption } from '../types'
 import { parseCurrency, formatCurrencyNumber } from './format'
 import type { PeriodRange } from './period'
 import { getMonthKeysInRange, isDateInRange } from './period'
@@ -36,15 +36,17 @@ function filterByPeriod<T extends { date: string }>(rows: T[], period: PeriodRan
 function loadStaffDataForPeriod(staffId: string, period: PeriodRange) {
   const monthKeys = getMonthKeysInRange(period.start, period.end)
   const opportunities: OpportunityRow[] = []
-  const revenues: RevenueRow[] = []
+  const revenueRows: RevenueEntryRow[] = []
+  const receivableRows: ReceivableEntryRow[] = []
 
   for (const monthKey of monthKeys) {
     const data = loadStaffData(staffId, monthKey)
     opportunities.push(...filterByPeriod(data.opportunities, period))
-    revenues.push(...filterByPeriod(data.revenues, period))
+    revenueRows.push(...filterByPeriod(data.revenueRows, period))
+    receivableRows.push(...filterByPeriod(data.receivableRows, period))
   }
 
-  return { opportunities, revenues }
+  return { opportunities, revenueRows, receivableRows }
 }
 
 function countBySource(opportunities: OpportunityRow[], source: SourceOption): number {
@@ -58,7 +60,7 @@ function summarizeStaff(
   staffName: string,
   period: PeriodRange,
 ): StaffSummaryRow {
-  const { opportunities, revenues } = loadStaffDataForPeriod(staffId, period)
+  const { opportunities, revenueRows, receivableRows } = loadStaffDataForPeriod(staffId, period)
   const filledOpportunities = opportunities.filter((row) => row.company.trim())
 
   return {
@@ -69,12 +71,12 @@ function summarizeStaff(
     fromSelfSearch: countBySource(opportunities, 'Tự tìm kiếm'),
     fromInternal: countBySource(opportunities, 'Nội bộ'),
     fromCsm: countBySource(opportunities, 'CSM'),
-    revenueReceived: revenues.reduce(
+    revenueReceived: revenueRows.reduce(
       (sum, row) => sum + parseCurrency(row.moneyReceived),
       0,
     ),
-    projectsToRecover: revenues.filter((row) => parseCurrency(row.receivable) > 0).length,
-    amountToRecover: revenues.reduce(
+    projectsToRecover: receivableRows.filter((row) => parseCurrency(row.receivable) > 0).length,
+    amountToRecover: receivableRows.reduce(
       (sum, row) => sum + parseCurrency(row.receivable),
       0,
     ),

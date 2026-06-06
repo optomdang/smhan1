@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { OpportunityRow, RevenueRow } from '../types'
+import type { OpportunityRow, ReceivableEntryRow, RevenueEntryRow } from '../types'
 import { createId } from '../utils/id'
 import { loadStaffData, saveStaffData } from '../utils/storage'
 
@@ -29,9 +29,17 @@ export function useStaffData(staffId: string, monthKey: string) {
     [markDirty],
   )
 
-  const updateRevenues = useCallback(
-    (updater: (rows: RevenueRow[]) => RevenueRow[]) => {
-      setData((prev) => ({ ...prev, revenues: updater(prev.revenues) }))
+  const updateRevenueRows = useCallback(
+    (updater: (rows: RevenueEntryRow[]) => RevenueEntryRow[]) => {
+      setData((prev) => ({ ...prev, revenueRows: updater(prev.revenueRows) }))
+      markDirty()
+    },
+    [markDirty],
+  )
+
+  const updateReceivableRows = useCallback(
+    (updater: (rows: ReceivableEntryRow[]) => ReceivableEntryRow[]) => {
+      setData((prev) => ({ ...prev, receivableRows: updater(prev.receivableRows) }))
       markDirty()
     },
     [markDirty],
@@ -58,17 +66,59 @@ export function useStaffData(staffId: string, monthKey: string) {
     [updateOpportunities],
   )
 
+  const removeOpportunityRow = useCallback(
+    (rowId: string) => {
+      updateOpportunities((rows) => {
+        const row = rows.find((item) => item.id === rowId)
+        if (!row?.isExtra) return rows
+        return rows.filter((item) => item.id !== rowId)
+      })
+    },
+    [updateOpportunities],
+  )
+
   const addRevenueRowAfter = useCallback(
     (afterId: string) => {
-      updateRevenues((rows) => {
+      updateRevenueRows((rows) => {
         const index = rows.findIndex((r) => r.id === afterId)
         if (index === -1) return rows
         const date = rows[index].date
-        const newRow: RevenueRow = {
+        const newRow: RevenueEntryRow = {
           id: createId(),
           date,
           project: '',
           moneyReceived: '',
+          isExtra: true,
+        }
+        const next = [...rows]
+        next.splice(index + 1, 0, newRow)
+        return next
+      })
+    },
+    [updateRevenueRows],
+  )
+
+  const removeRevenueRow = useCallback(
+    (rowId: string) => {
+      updateRevenueRows((rows) => {
+        const row = rows.find((item) => item.id === rowId)
+        if (!row?.isExtra) return rows
+        return rows.filter((item) => item.id !== rowId)
+      })
+    },
+    [updateRevenueRows],
+  )
+
+  const addReceivableRowAfter = useCallback(
+    (afterId: string) => {
+      updateReceivableRows((rows) => {
+        const index = rows.findIndex((r) => r.id === afterId)
+        if (index === -1) return rows
+        const date = rows[index].date
+        const newRow: ReceivableEntryRow = {
+          id: createId(),
+          date,
+          project: '',
           receivable: '',
           isExtra: true,
         }
@@ -77,7 +127,18 @@ export function useStaffData(staffId: string, monthKey: string) {
         return next
       })
     },
-    [updateRevenues],
+    [updateReceivableRows],
+  )
+
+  const removeReceivableRow = useCallback(
+    (rowId: string) => {
+      updateReceivableRows((rows) => {
+        const row = rows.find((item) => item.id === rowId)
+        if (!row?.isExtra) return rows
+        return rows.filter((item) => item.id !== rowId)
+      })
+    },
+    [updateReceivableRows],
   )
 
   const startEdit = useCallback(() => {
@@ -101,14 +162,20 @@ export function useStaffData(staffId: string, monthKey: string) {
 
   return {
     opportunities: data.opportunities,
-    revenues: data.revenues,
+    revenueRows: data.revenueRows,
+    receivableRows: data.receivableRows,
     isEditing,
     isDirty,
     saveMessage,
     updateOpportunities,
-    updateRevenues,
+    updateRevenueRows,
+    updateReceivableRows,
     addOpportunityRowAfter,
+    removeOpportunityRow,
     addRevenueRowAfter,
+    removeRevenueRow,
+    addReceivableRowAfter,
+    removeReceivableRow,
     startEdit,
     cancelEdit,
     save,

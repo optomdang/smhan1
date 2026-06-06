@@ -1,4 +1,5 @@
 import type { OpportunityRow } from '../types'
+import { TableRowActions } from './TableRowActions'
 import { SOURCE_OPTIONS } from '../types'
 import { formatDisplayDate, getDaysInMonth, parseMonthKey } from '../utils/date'
 import { getDateRowSpan, isFirstRowOfDate } from '../utils/table'
@@ -9,6 +10,7 @@ interface OpportunityTableProps {
   editable?: boolean
   onChange: (rows: OpportunityRow[]) => void
   onAddRowAfter: (afterId: string) => void
+  onRemoveRow: (rowId: string) => void
 }
 
 function getDayIndex(date: string, monthKey: string): number {
@@ -23,6 +25,7 @@ export function OpportunityTable({
   editable = true,
   onChange,
   onAddRowAfter,
+  onRemoveRow,
 }: OpportunityTableProps) {
   const updateRow = (id: string, patch: Partial<OpportunityRow>) => {
     onChange(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)))
@@ -87,17 +90,13 @@ export function OpportunityTable({
                     </select>
                   </td>
                   <td className="col-actions">
-                    {editable && (
-                      <button
-                        type="button"
-                        className="btn-row-add"
-                        onClick={() => onAddRowAfter(row.id)}
-                        title="Thêm công ty cùng ngày"
-                        aria-label="Thêm công ty cùng ngày"
-                      >
-                        +
-                      </button>
-                    )}
+                    <TableRowActions
+                      editable={editable}
+                      canDelete={Boolean(row.isExtra)}
+                      addTitle="Thêm công ty cùng ngày"
+                      onAdd={() => onAddRowAfter(row.id)}
+                      onRemove={() => onRemoveRow(row.id)}
+                    />
                   </td>
                 </tr>
               )

@@ -1,14 +1,16 @@
-import type { RevenueRow } from '../types'
+import type { ReceivableEntryRow } from '../types'
+import { TableRowActions } from './TableRowActions'
 import { formatCurrency, formatCurrencyNumber, parseCurrency } from '../utils/format'
 import { formatDisplayDate, getDaysInMonth, parseMonthKey } from '../utils/date'
 import { getDateRowSpan, isFirstRowOfDate } from '../utils/table'
 
 interface ReceivableTableProps {
-  rows: RevenueRow[]
+  rows: ReceivableEntryRow[]
   monthKey: string
   editable?: boolean
-  onChange: (rows: RevenueRow[]) => void
+  onChange: (rows: ReceivableEntryRow[]) => void
   onAddRowAfter: (afterId: string) => void
+  onRemoveRow: (rowId: string) => void
 }
 
 function getDayIndex(date: string, monthKey: string): number {
@@ -23,8 +25,9 @@ export function ReceivableTable({
   editable = true,
   onChange,
   onAddRowAfter,
+  onRemoveRow,
 }: ReceivableTableProps) {
-  const updateRow = (id: string, patch: Partial<RevenueRow>) => {
+  const updateRow = (id: string, patch: Partial<ReceivableEntryRow>) => {
     onChange(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)))
   }
 
@@ -86,17 +89,13 @@ export function ReceivableTable({
                     </div>
                   </td>
                   <td className="col-actions">
-                    {editable && (
-                      <button
-                        type="button"
-                        className="btn-row-add"
-                        onClick={() => onAddRowAfter(row.id)}
-                        title="Thêm dự án cùng ngày"
-                        aria-label="Thêm dự án cùng ngày"
-                      >
-                        +
-                      </button>
-                    )}
+                    <TableRowActions
+                      editable={editable}
+                      canDelete={Boolean(row.isExtra)}
+                      addTitle="Thêm dự án cùng ngày"
+                      onAdd={() => onAddRowAfter(row.id)}
+                      onRemove={() => onRemoveRow(row.id)}
+                    />
                   </td>
                 </tr>
               )
