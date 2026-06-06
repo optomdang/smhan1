@@ -4,11 +4,103 @@
   max-width: 1320px;
 }
 
+.dashboard-report-export {
+  background: #fff;
+}
+
+.dashboard-report-export-header {
+  display: none;
+}
+
+.dashboard-report-export.is-exporting .dashboard-report-export-header {
+  display: block;
+  text-align: center;
+  padding: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 0.75rem;
+}
+
+.dashboard-report-export.is-exporting .dashboard-report-export-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  letter-spacing: 0.02em;
+}
+
+.dashboard-report-export.is-exporting .dashboard-report-export-header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
 .dashboard-main {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
+}
+
+.pdf-signature-block {
+  display: none;
+}
+
+.dashboard-report-export.is-exporting .pdf-signature-block {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1.25rem 2rem 0.5rem;
+}
+
+.pdf-signature-box {
+  width: 14rem;
+  text-align: center;
+}
+
+.pdf-signature-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #1e293b;
+}
+
+.pdf-signature-line {
+  margin-top: 3.5rem;
+  border-bottom: 1px solid #334155;
+}
+
+.dashboard-report-export.is-exporting {
+  padding: 0.75rem;
+  background: #fff;
+}
+
+.dashboard-report-export.is-exporting .dashboard-main {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.dashboard-report-export.is-exporting .dashboard-table-wrap {
+  overflow: visible;
+}
+
+.btn-dashboard-export {
+  border: 1px solid #bbf7d0;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.45rem 0.875rem;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-dashboard-export:hover:not(:disabled) {
+  background: #d1fae5;
+}
+
+.btn-dashboard-export:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
 
 .dashboard-header {

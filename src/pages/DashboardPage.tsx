@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChangePasswordModal } from '../components/ChangePasswordModal'
 import { CustomerSourceChart } from '../components/CustomerSourceChart'
 import { DashboardLoginModal } from '../components/DashboardLoginModal'
@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { seedTestData } from '../data/seed'
 import { getStaffById } from '../data/staff'
 import { getDashboardRows, getDashboardTotals } from '../utils/dashboard'
+import { exportDashboardPdf } from '../utils/exportDashboardPdf'
 import { getDefaultPeriod, getMonthPeriod } from '../utils/period'
 import type { PeriodRange } from '../utils/period'
 import { nameToLoginId } from '../utils/vietnamese'
@@ -20,6 +21,8 @@ export function DashboardPage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
+  const [isExportingPdf, setIsExportingPdf] = useState(false)
+  const reportExportRef = useRef<HTMLDivElement>(null)
   const { canEditDashboard, session, loginToDashboard, logout, changePassword } = useAuth()
 
   const editorStaff = session ? getStaffById(session.staffId) : undefined
@@ -44,6 +47,16 @@ export function DashboardPage() {
       current.monthKey === monthKey ? current : getMonthPeriod(monthKey),
     )
     setRefreshKey((key) => key + 1)
+  }
+
+  const handleExportPdf = async () => {
+    if (!reportExportRef.current || isExportingPdf) return
+    setIsExportingPdf(true)
+    try {
+      await exportDashboardPdf(reportExportRef.current, period.label)
+    } finally {
+      setIsExportingPdf(false)
+    }
   }
 
   return (
@@ -86,6 +99,14 @@ export function DashboardPage() {
               </button>
             </>
           )}
+          <button
+            type="button"
+            className="btn-dashboard-export"
+            onClick={handleExportPdf}
+            disabled={isExportingPdf}
+          >
+            {isExportingPdf ? 'Đang xuất PDF…' : 'Xuất PDF'}
+          </button>
           <PeriodFilter
             period={period}
             onChange={setPeriod}
@@ -95,9 +116,23 @@ export function DashboardPage() {
         </div>
       </header>
 
-      <div className="dashboard-main">
-        <CustomerSourceChart totals={totals} />
-        <DashboardSummaryTable rows={rows} totals={totals} periodLabel={period.label} />
+      <div ref={reportExportRef} className="dashboard-report-export">
+        <div className="dashboard-report-export-header">
+          <h2>BÁO CÁO TỔNG HỢP KẾT QUẢ BÁN HÀNG VÀ CÔNG NỢ</h2>
+          <p>Kỳ báo cáo: {period.label}</p>
+        </div>
+
+        <div className="dashboard-main">
+          <CustomerSourceChart totals={totals} />
+          <DashboardSummaryTable rows={rows} totals={totals} periodLabel={period.label} />
+        </div>
+
+        <div className="pdf-signature-block">
+          <div className="pdf-signature-box">
+            <p className="pdf-signature-title">NGƯỜI LẬP BÁO CÁO</p>
+            <div className="pdf-signature-line" />
+          </div>
+        </div>
       </div>
 
       <StaffDailyChart
